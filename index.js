@@ -93,9 +93,14 @@ async function run() {
 
             // Create and assign a token
             const token = jwt.sign({ _id: user._id, role: user.role }, process.env.TOKEN_SECRET);
-            res.header('auth-token', token).send(token);
+            res.status(201).json({ token });
+            // res.header('auth-token', token).send(token);
         });
 
+        app.get('/logout', (req, res) => {
+            req.logout();
+            res.redirect('/');
+        });
 
     } catch (error) {
 
