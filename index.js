@@ -4,6 +4,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+const bcrypt = require("bcryptjs")
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -37,6 +38,7 @@ async function run() {
         // user creating API
         app.post('/users', async (req, res) => {
             const user = req.body
+            console.log(user)
             const result = await userCollection.insertOne(user)
             res.send(result)
 
@@ -46,7 +48,7 @@ async function run() {
             try {
                 // Destructure the request body
                 const { name, email, password, role } = req.body;
-
+                console.log(req.body)
                 // Check if the user already exists
                 const user = await userCollection.findOne({ email });
                 if (user) return res.status(400).json({ msg: 'User already exists' });
@@ -58,7 +60,7 @@ async function run() {
                     password,
                     role
                 });
-
+                console.log(newUser)
                 // Hash the password
                 const salt = await bcrypt.genSalt(10);
                 newUser.password = await bcrypt.hash(password, salt);
@@ -71,7 +73,7 @@ async function run() {
                 res.status(201).json({ token });
             } catch (err) {
                 console.error(err.message);
-                res.status(500).send('Server Error');
+                res.status(500).send(message = 'Server Error');
             }
         });
 
