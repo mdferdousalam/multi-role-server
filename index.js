@@ -3,7 +3,8 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require("bcryptjs")
 
 const app = express();
@@ -12,7 +13,8 @@ const port = process.env.PORT || 5000;
 app.use(cors())
 app.use(express.json())
 
-
+app.use(passport.initialize());
+app.use(passport.session());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kykmokn.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -47,7 +49,7 @@ async function run() {
         app.post('/signup', async (req, res) => {
             try {
                 // Destructure the request body
-                const { name, email, password, role } = req.body;
+                const { DisplayName, email, password, role } = req.body;
                 console.log(req.body)
                 // Check if the user already exists
                 const user = await userCollection.findOne({ email });
@@ -55,7 +57,7 @@ async function run() {
 
                 // Create a new user
                 const newUser = ({
-                    name,
+                    DisplayName,
                     email,
                     password,
                     role
@@ -99,7 +101,7 @@ async function run() {
 
         app.get('/logout', (req, res) => {
             req.logout();
-            res.redirect('/');
+            res.send({ success: true });
         });
 
     } catch (error) {
