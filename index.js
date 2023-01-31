@@ -66,8 +66,8 @@ async function run() {
             const query = { role: role }
             const cursor = userCollection.find(query);
             const result = await cursor.toArray()
-            const total = await result.length()
-            res.send(result, total);
+
+            res.send(result);
         })
 
         // All Students
