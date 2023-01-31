@@ -3,8 +3,7 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
+
 const bcrypt = require("bcryptjs")
 
 const app = express();
@@ -13,8 +12,7 @@ const port = process.env.PORT || 5000;
 app.use(cors())
 app.use(express.json())
 
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kykmokn.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -37,13 +35,55 @@ async function run() {
 
 
 
-        // user creating API
-        app.post('/users', async (req, res) => {
-            const user = req.body
-            console.log(user)
-            const result = await userCollection.insertOne(user)
-            res.send(result)
+        // admin users 
+        app.get('/users/admin', async (req, res) => {
+            const email = req.query.email;
+            const query = { email }
+            const user = await userCollection.findOne(query);
+            console.log(user);
+            res.send({ isAdmin: user?.role === "admin" });
+        })
 
+        //All admins 
+        app.get('/users/admins', async (req, res) => {
+            const role = 'admin'
+            const query = { role: role }
+            const cursor = userCollection.find(query);
+            const result = await cursor.toArray()
+            res.send(result);
+        })
+
+        // consultant
+        app.get('/users/consultant', async (req, res) => {
+            const email = req.query.email;
+            const query = { email }
+            const user = await userCollection.findOne(query);
+            res.send({ isConsultant: user?.role === 'consultant' });
+        })
+        //All consultants 
+        app.get('/users/consultants', async (req, res) => {
+            const role = 'consultant'
+            const query = { role: role }
+            const cursor = userCollection.find(query);
+            const result = await cursor.toArray()
+            const total = await result.length()
+            res.send(result, total);
+        })
+
+        // All Students
+        app.get('/users/students', async (req, res) => {
+            const role = 'student';
+            const query = { role: role }
+            const cursor = userCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+        // Student 
+        app.get('/users/student', async (req, res) => {
+            const email = req.query.email;
+            const query = { email }
+            const user = await userCollection.findOne(query);
+            res.send({ isStudent: user?.role === 'student' });
         })
 
         app.post('/signup', async (req, res) => {
@@ -99,10 +139,11 @@ async function run() {
             // res.header('auth-token', token).send(token);
         });
 
-        app.get('/logout', (req, res) => {
-            req.logout();
-            res.send({ success: true });
-        });
+
+
+
+
+
 
     } catch (error) {
 
@@ -120,16 +161,12 @@ app.get('/', (req, res) => {
     res.send('multi role server is running')
 })
 
-
+app.use(function (err, req, res, next) {
+    console.error(err.stack);
+    res.status(500).send(err.stack);
+});
 
 app.listen(port, () => {
     console.log(`surver running on port: ${port}`)
-    client.connect(err => {
-        if (err) {
-            console.log(err)
-        } else {
-            console.log('Connected to mongoDb')
-            client.close();
-        }
-    })
+
 })
